@@ -11,13 +11,10 @@ export class StreamingServicesService {
     });
   }
 
-  async findFirst(name: string) {
+  async findFirst(id: number) {
     const streamingService = await this.prisma.streamingService.findFirst({
       where: {
-        name: {
-          equals: name,
-          mode: 'insensitive',
-        },
+        id,
       },
     });
 

@@ -12,9 +12,9 @@ export class StreamingServicesController {
     return this.streamingServicesService.findMany();
   }
 
-  @Get(':name')
-  async getFirst(@Param('name') name: string) {
-    return this.streamingServicesService.findFirst(name);
+  @Get(':id')
+  async getFirst(@Param('id') id: number) {
+    return this.streamingServicesService.findFirst(id);
   }
 
   @Post()

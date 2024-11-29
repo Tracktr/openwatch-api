@@ -11,13 +11,10 @@ export class MoviesService {
     });
   }
 
-  async findFirst(title: string) {
+  async findFirst(id: number) {
     const movie = await this.prisma.movie.findFirst({
       where: {
-        title: {
-          equals: title,
-          mode: 'insensitive',
-        },
+        id,
       },
       include: { streamingServices: true },
     });

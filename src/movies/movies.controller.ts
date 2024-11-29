@@ -10,9 +10,9 @@ export class MoviesController {
     return this.moviesService.findMany();
   }
 
-  @Get(':movie')
-  async getFirst(@Param('movie') movie: string) {
-    const streamingServices = await this.moviesService.findFirst(movie);
+  @Get(':id')
+  async getFirst(@Param('id') id: number) {
+    const streamingServices = await this.moviesService.findFirst(id);
     return streamingServices;
   }
 
