@@ -1,4 +1,4 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { StreamingServicesService } from './streaming-services.service';
 
 @Controller('streaming-services')
@@ -7,9 +7,20 @@ export class StreamingServicesController {
     private readonly streamingServicesService: StreamingServicesService,
   ) {}
 
-  // Endpoint to get streaming service details by name
+  @Get()
+  async getMany() {
+    return this.streamingServicesService.findMany();
+  }
+
   @Get(':name')
-  async getStreamingService(@Param('name') name: string) {
-    return this.streamingServicesService.findByName(name);
+  async getFirst(@Param('name') name: string) {
+    return this.streamingServicesService.findFirst(name);
+  }
+
+  @Post()
+  async create(
+    @Body() createStreamingServiceDto: { name: string; logoUrl: string },
+  ) {
+    return this.streamingServicesService.create(createStreamingServiceDto);
   }
 }

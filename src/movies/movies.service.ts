@@ -1,16 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { StreamingService } from '@prisma/client';
 
 @Injectable()
 export class MoviesService {
   constructor(private prisma: PrismaService) {}
 
-  async findStreamingServicesForMovie(
-    title: string,
-  ): Promise<StreamingService[]> {
+  async findMany() {
+    return this.prisma.movie.findMany({
+      include: { streamingServices: true },
+    });
+  }
+
+  async findFirst(title: string) {
     const movie = await this.prisma.movie.findFirst({
-      where: { title },
+      where: {
+        title: {
+          equals: title,
+          mode: 'insensitive',
+        },
+      },
       include: { streamingServices: true },
     });
 
@@ -18,6 +26,22 @@ export class MoviesService {
       throw new NotFoundException('Movie not found');
     }
 
-    return movie.streamingServices;
+    return movie;
+  }
+
+  async createMovie(data: {
+    title: string;
+    releaseYear: number;
+    streamingServiceId: number;
+  }) {
+    return this.prisma.movie.create({
+      data: {
+        title: data.title,
+        releaseYear: data.releaseYear,
+        streamingServices: {
+          connect: { id: data.streamingServiceId },
+        },
+      },
+    });
   }
 }
