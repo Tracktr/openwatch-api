@@ -1,5 +1,6 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
 import { MoviesService } from './movies.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('movies')
 export class MoviesController {
@@ -17,6 +18,7 @@ export class MoviesController {
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   async createMovie(
     @Body()
     createMovieDto: {
