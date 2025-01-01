@@ -6,12 +6,12 @@ import * as crypto from 'node:crypto';
 export class AuthService {
   constructor(private prisma: PrismaService) {}
 
-  async generateAuthKey(applicationId: string): Promise<string> {
-    const authKey = crypto.randomBytes(32).toString('hex');
+  async generateAuthKey(applicationId: number): Promise<string> {
+    const authKey = crypto.randomBytes(16).toString('hex');
     await this.prisma.apiKey.create({
       data: {
         key: authKey,
-        applicationId,
+        Application: { connect: { id: applicationId } },
       },
     });
     return authKey;

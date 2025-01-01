@@ -39,19 +39,18 @@ model MovieAvailability {
 }
 
 model Application {
-  id        String   @id @default(cuid())
+  id        Int      @id @default(autoincrement())
   name      String
   apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
-  apiKeyId  String?
+  apiKeyId  Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }
 
 model ApiKey {
-  id            String   @id @default(cuid())
-  key           String   @unique
-  applicationId String
-  createdAt     DateTime @default(now())
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  createdAt DateTime @default(now())
 
   Application Application[]
 }
