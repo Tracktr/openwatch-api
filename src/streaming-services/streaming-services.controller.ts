@@ -1,5 +1,14 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { StreamingServicesService } from './streaming-services.service';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @Controller('streaming-services')
 export class StreamingServicesController {
@@ -8,18 +17,24 @@ export class StreamingServicesController {
   ) {}
 
   @Get()
-  async getMany() {
-    return this.streamingServicesService.findMany();
+  async getMany(@Query('country') country?: string) {
+    return this.streamingServicesService.findMany(country);
   }
 
   @Get(':id')
-  async getFirst(@Param('id') id: number) {
-    return this.streamingServicesService.findFirst(id);
+  async getFirst(@Param('id') id: number, @Query('country') country?: string) {
+    return this.streamingServicesService.findFirst(id, country);
   }
 
   @Post()
+  @UseGuards(AuthGuard)
   async create(
-    @Body() createStreamingServiceDto: { name: string; logoUrl: string },
+    @Body()
+    createStreamingServiceDto: {
+      name: string;
+      logoUrl: string;
+      country: string;
+    },
   ) {
     return this.streamingServicesService.create(createStreamingServiceDto);
   }

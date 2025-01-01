@@ -5,18 +5,38 @@ import { PrismaService } from '../prisma.service';
 export class MoviesService {
   constructor(private prisma: PrismaService) {}
 
-  async findMany() {
+  async findMany(country?: string) {
     return this.prisma.movie.findMany({
-      include: { streamingServices: true },
+      include: {
+        availability: {
+          include: {
+            streamingService: true,
+          },
+          where: country
+            ? {
+                country: country,
+              }
+            : undefined,
+        },
+      },
     });
   }
 
-  async findFirst(id: number) {
+  async findFirst(id: number, country?: string) {
     const movie = await this.prisma.movie.findFirst({
-      where: {
-        id,
+      where: { id },
+      include: {
+        availability: {
+          include: {
+            streamingService: true,
+          },
+          where: country
+            ? {
+                country: country,
+              }
+            : undefined,
+        },
       },
-      include: { streamingServices: true },
     });
 
     if (!movie) {
@@ -29,14 +49,29 @@ export class MoviesService {
   async createMovie(data: {
     title: string;
     releaseYear: number;
-    streamingServiceId: number;
+    availability: {
+      streamingServiceId: number;
+      country: string;
+    }[];
   }) {
     return this.prisma.movie.create({
       data: {
         title: data.title,
         releaseYear: data.releaseYear,
-        streamingServices: {
-          connect: { id: data.streamingServiceId },
+        availability: {
+          create: data.availability.map((a) => ({
+            country: a.country,
+            streamingService: {
+              connect: { id: a.streamingServiceId },
+            },
+          })),
+        },
+      },
+      include: {
+        availability: {
+          include: {
+            streamingService: true,
+          },
         },
       },
     });

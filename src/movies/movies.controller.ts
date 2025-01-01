@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Param, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { MoviesService } from './movies.service';
 import { AuthGuard } from 'src/auth/auth.guard';
 
@@ -7,13 +15,13 @@ export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
   @Get()
-  async getMany() {
-    return this.moviesService.findMany();
+  async getMany(@Query('country') country?: string) {
+    return this.moviesService.findMany(country);
   }
 
   @Get(':id')
-  async getFirst(@Param('id') id: number) {
-    const streamingServices = await this.moviesService.findFirst(id);
+  async getFirst(@Param('id') id: number, @Query('country') country?: string) {
+    const streamingServices = await this.moviesService.findFirst(id, country);
     return streamingServices;
   }
 
@@ -24,7 +32,10 @@ export class MoviesController {
     createMovieDto: {
       title: string;
       releaseYear: number;
-      streamingServiceId: number;
+      availability: {
+        streamingServiceId: number;
+        country: string;
+      }[];
     },
   ) {
     return this.moviesService.createMovie(createMovieDto);

@@ -5,16 +5,36 @@ import { PrismaService } from '../prisma.service';
 export class StreamingServicesService {
   constructor(private prisma: PrismaService) {}
 
-  async findMany() {
+  async findMany(country?: string) {
     return this.prisma.streamingService.findMany({
-      include: { movies: true },
+      where: country
+        ? {
+            availability: {
+              some: {
+                country,
+              },
+            },
+          }
+        : undefined,
+      include: {
+        availability: {
+          include: {
+            movie: true,
+          },
+        },
+      },
     });
   }
 
-  async findFirst(id: number) {
+  async findFirst(id: number, country?: string) {
     const streamingService = await this.prisma.streamingService.findFirst({
       where: {
         id,
+        availability: {
+          some: {
+            country,
+          },
+        },
       },
     });
 
@@ -25,7 +45,7 @@ export class StreamingServicesService {
     return streamingService;
   }
 
-  async create(data: { name: string; logoUrl: string }) {
+  async create(data: { name: string; logoUrl: string; country: string }) {
     return this.prisma.streamingService.create({ data });
   }
 }
