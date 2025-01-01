@@ -21,16 +21,20 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@anatine/zod-nestjs": "^2.0.9",
+    "@anatine/zod-openapi": "^2.2.6",
     "@fastify/static": "^7.0.0",
     "@nestjs/common": "^10.0.0",
     "@nestjs/core": "^10.0.0",
     "@nestjs/platform-express": "^10.0.0",
     "@nestjs/platform-fastify": "^10.4.12",
-    "@nestjs/swagger": "^8.1.0",
+    "@nestjs/swagger": "^7.0.0",
     "@prisma/client": "^6.1.0",
     "fastify": "^5.1.0",
+    "openapi3-ts": "^4.4.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.0.0",

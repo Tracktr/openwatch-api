@@ -1,40 +1,59 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CreateMovieDto } from './movies.dto';
 
 @Injectable()
 export class MoviesService {
   constructor(private prisma: PrismaService) {}
 
-  async findMany(country?: string) {
-    return this.prisma.movie.findMany({
-      include: {
-        availability: {
-          include: {
-            streamingService: true,
+  async findMany(country: string) {
+    return {
+      movies: await this.prisma.movie.findMany({
+        where: {
+          availability: {
+            some: {
+              country: country,
+            },
           },
-          where: country
-            ? {
-                country: country,
-              }
-            : undefined,
         },
-      },
-    });
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingService: true,
+            },
+            where: {
+              country,
+            },
+          },
+        },
+      }),
+    };
   }
 
   async findFirst(id: number, country?: string) {
     const movie = await this.prisma.movie.findFirst({
-      where: { id },
+      where: {
+        id: Number(id),
+        availability: {
+          some: {
+            country: country,
+          },
+        },
+      },
       include: {
         availability: {
-          include: {
+          select: {
+            id: false,
+            country: false,
+            movieId: false,
             streamingService: true,
           },
-          where: country
-            ? {
-                country: country,
-              }
-            : undefined,
+          where: {
+            country,
+          },
         },
       },
     });
@@ -46,14 +65,7 @@ export class MoviesService {
     return movie;
   }
 
-  async createMovie(data: {
-    title: string;
-    releaseYear: number;
-    availability: {
-      streamingServiceId: number;
-      country: string;
-    }[];
-  }) {
+  async createMovie(data: CreateMovieDto) {
     return this.prisma.movie.create({
       data: {
         title: data.title,
@@ -69,7 +81,10 @@ export class MoviesService {
       },
       include: {
         availability: {
-          include: {
+          select: {
+            id: false,
+            country: false,
+            movieId: false,
             streamingService: true,
           },
         },

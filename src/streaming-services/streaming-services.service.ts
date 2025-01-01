@@ -1,38 +1,54 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
+import { CreateStreamingServiceDto } from './streaming-services.dto';
 
 @Injectable()
 export class StreamingServicesService {
   constructor(private prisma: PrismaService) {}
 
-  async findMany(country?: string) {
-    return this.prisma.streamingService.findMany({
-      where: country
-        ? {
-            availability: {
-              some: {
-                country,
-              },
+  async findMany(country: string) {
+    return {
+      streamingServices: await this.prisma.streamingService.findMany({
+        where: {
+          availability: {
+            some: {
+              country: country,
             },
-          }
-        : undefined,
-      include: {
-        availability: {
-          include: {
-            movie: true,
           },
         },
-      },
-    });
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingServiceId: false,
+              movie: true,
+            },
+          },
+        },
+      }),
+    };
   }
 
   async findFirst(id: number, country?: string) {
     const streamingService = await this.prisma.streamingService.findFirst({
       where: {
-        id,
+        id: Number(id),
         availability: {
           some: {
-            country,
+            country: country,
+          },
+        },
+      },
+      include: {
+        availability: {
+          select: {
+            id: false,
+            country: false,
+            movieId: false,
+            streamingServiceId: false,
+            movie: true,
           },
         },
       },
@@ -45,7 +61,23 @@ export class StreamingServicesService {
     return streamingService;
   }
 
-  async create(data: { name: string; logoUrl: string; country: string }) {
-    return this.prisma.streamingService.create({ data });
+  async create(data: CreateStreamingServiceDto) {
+    return this.prisma.streamingService.create({
+      data: {
+        logoUrl: data.logoUrl,
+        name: data.name,
+      },
+      include: {
+        availability: {
+          select: {
+            id: false,
+            country: false,
+            movieId: false,
+            streamingServiceId: false,
+            movie: true,
+          },
+        },
+      },
+    });
   }
 }
