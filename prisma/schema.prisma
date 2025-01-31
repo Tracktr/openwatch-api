@@ -46,6 +46,16 @@ model User {
   applications Application[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  tokens       Token[]
+}
+
+model Token {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  expiresAt DateTime
 }
 
 model Application {

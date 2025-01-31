@@ -1,7 +1,8 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Request } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { ApiCreatedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiCreatedResponse } from '@nestjs/swagger';
 import { ApplicationDto, CreateApplicationDto } from './applications.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('applications')
 export class ApplicationsController {
@@ -11,9 +12,15 @@ export class ApplicationsController {
   @ApiCreatedResponse({
     type: ApplicationDto,
   })
-  async createApplication(@Body() createApplicationDto: CreateApplicationDto) {
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('Bearer')
+  async createApplication(
+    @Body() createApplicationDto: CreateApplicationDto,
+    @Request() req,
+  ) {
     return this.applicationsService.createApplication(
       createApplicationDto.name,
+      req.user,
     );
   }
 }

@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback } from 'passport-google-oauth20';
 import { ConfigService } from '@nestjs/config';
-import { PrismaService } from 'src/prisma.service';
+import { AuthService } from '../auth.service';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     private readonly configService: ConfigService,
-    private readonly prisma: PrismaService,
+    private readonly authService: AuthService,
   ) {
     super({
       clientID: configService.get<string>('GOOGLE_CLIENT_ID'),
@@ -27,16 +27,13 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     const { id, displayName, emails } = profile;
     const email = emails[0]?.value;
 
-    let user = await this.prisma.user.findUnique({ where: { googleId: id } });
+    const user = await this.authService.validateUserByGoogle(
+      id,
+      email,
+      displayName,
+    );
+    const jwt = await this.authService.generateJwt(user);
 
-    if (!user) {
-      user = await this.prisma.user.upsert({
-        where: { email },
-        update: { googleId: id },
-        create: { email, googleId: id, name: displayName },
-      });
-    }
-
-    done(null, user);
+    done(null, { user, jwt });
   }
 }

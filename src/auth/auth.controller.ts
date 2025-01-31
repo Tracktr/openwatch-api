@@ -12,7 +12,7 @@ export class AuthController {
 
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleAuthRedirect(@Req() req: Request) {
-    return req.user;
+  async googleAuthRedirect(@Req() req: Request) {
+    return req.user.jwt;
   }
 }
