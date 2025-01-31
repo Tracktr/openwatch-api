@@ -15,6 +15,17 @@ async function bootstrap() {
       { type: 'apiKey', name: 'x-access-token', in: 'header' },
       'x-access-token',
     )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'JWT',
+        description: 'Enter JWT token',
+        in: 'header',
+      },
+      'Bearer',
+    )
     .build();
   patchNestjsSwagger();
   const document = SwaggerModule.createDocument(app, config);
