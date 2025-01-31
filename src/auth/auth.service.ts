@@ -72,8 +72,9 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token is invalid or expired');
     }
 
-    // Decode the JWT
     const payload = this.jwtService.verify(refreshToken);
+    await this.prisma.refreshToken.delete({ where: { token: refreshToken } });
+
     return this.generateTokens({ id: payload.sub, email: payload.email });
   }
 }
