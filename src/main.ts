@@ -20,6 +20,22 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
+  // passport doesn't work nicely with fastify, so we need to add some hooks to make it work
+  // github.com/nestjs/nest/issues/5702
+  https: app
+    .getHttpAdapter()
+    .getInstance()
+    .addHook('onRequest', (request, reply, done) => {
+      reply.setHeader = function (key, value) {
+        return this.raw.setHeader(key, value);
+      };
+      reply.end = function () {
+        this.raw.end();
+      };
+      request.res = reply;
+      done();
+    });
+
   app.setGlobalPrefix('api');
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }

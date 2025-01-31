@@ -11,7 +11,7 @@ export class ApplicationsService {
 
   async createApplication(name: string) {
     const application = await this.prisma.application.create({
-      data: { name },
+      data: { name, user: { connect: { id: '1' } } },
     });
     const apiKey = await this.authService.generateAuthKey(application.id);
 

@@ -38,13 +38,25 @@ model MovieAvailability {
   @@unique([movieId, streamingServiceId, country])
 }
 
+model User {
+  id           String        @id @default(uuid())
+  email        String        @unique
+  name         String?
+  googleId     String?       @unique
+  applications Application[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
 model Application {
-  id        Int      @id @default(autoincrement())
+  id        String   @id @default(uuid())
   name      String
-  apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
-  apiKeyId  Int?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
+  updatedAt DateTime @updatedAt
+  ApiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
+  apiKeyId  Int?
 }
 
 model ApiKey {
