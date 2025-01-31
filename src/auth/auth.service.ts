@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import * as crypto from 'node:crypto';
 import { JwtService } from '@nestjs/jwt';
@@ -28,21 +28,6 @@ export class AuthService {
     return !!key;
   }
 
-  async generateJwt(user: { id: string; email: string }) {
-    const payload = { email: user.email, sub: user.id };
-    const token = this.jwtService.sign(payload, { expiresIn: '7d' });
-
-    await this.prisma.token.create({
-      data: {
-        token,
-        userId: user.id,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-      },
-    });
-
-    return { access_token: token };
-  }
-
   async validateUserByGoogle(googleId: string, email: string, name?: string) {
     let user = await this.prisma.user.findUnique({ where: { googleId } });
 
@@ -55,5 +40,40 @@ export class AuthService {
     }
 
     return user;
+  }
+
+  async generateTokens(user: { id: string; email: string }) {
+    const payload = { email: user.email, sub: user.id };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '15m',
+    });
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '7d',
+    });
+
+    await this.prisma.refreshToken.create({
+      data: {
+        token: refreshToken,
+        userId: user.id,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
+
+    return { access_token: accessToken, refresh_token: refreshToken };
+  }
+
+  async validateRefreshToken(refreshToken: string) {
+    const storedToken = await this.prisma.refreshToken.findUnique({
+      where: { token: refreshToken },
+    });
+
+    if (!storedToken || storedToken.expiresAt < new Date()) {
+      throw new UnauthorizedException('Refresh token is invalid or expired');
+    }
+
+    // Decode the JWT
+    const payload = this.jwtService.verify(refreshToken);
+    return this.generateTokens({ id: payload.sub, email: payload.email });
   }
 }

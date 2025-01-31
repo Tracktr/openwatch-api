@@ -13,7 +13,6 @@ export class ApplicationsService {
     name: string,
     user: { userId: string; email: string },
   ) {
-    console.log('user', user);
     const application = await this.prisma.application.create({
       data: {
         name,

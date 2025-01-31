@@ -16,12 +16,12 @@ export class AuthGuard implements CanActivate {
     const authKey = request.headers['x-access-token'] as string;
 
     if (!authKey) {
-      throw new UnauthorizedException('Auth key is missing');
+      throw new UnauthorizedException('Api key is missing');
     }
 
     const isValid = await this.authService.validateAuthKey(authKey);
     if (!isValid) {
-      throw new UnauthorizedException('Invalid auth key');
+      throw new UnauthorizedException('Invalid api key');
     }
 
     return true;

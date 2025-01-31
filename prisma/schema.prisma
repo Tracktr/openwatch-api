@@ -39,17 +39,17 @@ model MovieAvailability {
 }
 
 model User {
-  id           String        @id @default(uuid())
-  email        String        @unique
-  name         String?
-  googleId     String?       @unique
-  applications Application[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-  tokens       Token[]
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String?
+  googleId      String?        @unique
+  applications  Application[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  refreshTokens RefreshToken[]
 }
 
-model Token {
+model RefreshToken {
   id        String   @id @default(uuid())
   token     String   @unique
   userId    String
@@ -65,7 +65,7 @@ model Application {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  ApiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
+  apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
   apiKeyId  Int?
 }
 
