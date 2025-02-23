@@ -25,7 +25,7 @@ export class MoviesService {
           availability: {
             select: {
               id: false,
-              country: false,
+              country: true,
               movieId: false,
               streamingService: true,
             },
