@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateMovieDto } from './movies.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class MoviesService {
   constructor(private prisma: PrismaService) {}
 
   async findMany(country: string) {
-    return {
-      movies: await this.prisma.movie.findMany({
+    try {
+      const movies = await this.prisma.movie.findMany({
         where: {
           availability: {
             some: {
@@ -29,66 +34,97 @@ export class MoviesService {
             },
           },
         },
-      }),
-    };
+      });
+
+      if (!movies || movies.length < 1) {
+        throw new NotFoundException('No movies found');
+      }
+
+      return { movies };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid country');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('No movies found');
+      }
+      throw error;
+    }
   }
 
   async findFirst(id: number, country?: string) {
-    const movie = await this.prisma.movie.findFirst({
-      where: {
-        id: Number(id),
-        availability: {
-          some: {
-            country: country,
+    try {
+      const movie = await this.prisma.movie.findFirst({
+        where: {
+          id: Number(id),
+          availability: {
+            some: {
+              country: country,
+            },
           },
         },
-      },
-      include: {
-        availability: {
-          select: {
-            id: false,
-            country: false,
-            movieId: false,
-            streamingService: true,
-          },
-          where: {
-            country,
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingService: true,
+            },
+            where: {
+              country,
+            },
           },
         },
-      },
-    });
+      });
 
-    if (!movie) {
-      throw new NotFoundException('Movie not found');
+      if (!movie) {
+        throw new NotFoundException('Movie not found');
+      }
+
+      return movie;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid movie ID');
+      }
+      throw error;
     }
-
-    return movie;
   }
 
   async createMovie(data: CreateMovieDto) {
-    return this.prisma.movie.create({
-      data: {
-        title: data.title,
-        releaseYear: data.releaseYear,
-        availability: {
-          create: data.availability.map((a) => ({
-            country: a.country,
-            streamingService: {
-              connect: { id: a.streamingServiceId },
-            },
-          })),
-        },
-      },
-      include: {
-        availability: {
-          select: {
-            id: false,
-            country: false,
-            movieId: false,
-            streamingService: true,
+    try {
+      return await this.prisma.movie.create({
+        data: {
+          title: data.title,
+          releaseYear: data.releaseYear,
+          availability: {
+            create: data.availability.map((movieAvailability) => ({
+              country: movieAvailability.country,
+              streamingService: {
+                connect: { id: movieAvailability.streamingServiceId },
+              },
+            })),
           },
         },
-      },
-    });
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingService: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid movie data');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('Unable to create movie');
+      }
+      throw error;
+    }
   }
 }

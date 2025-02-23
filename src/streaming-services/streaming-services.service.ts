@@ -1,14 +1,19 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { CreateStreamingServiceDto } from './streaming-services.dto';
+import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class StreamingServicesService {
   constructor(private prisma: PrismaService) {}
 
   async findMany(country: string) {
-    return {
-      streamingServices: await this.prisma.streamingService.findMany({
+    try {
+      const streamingServices = await this.prisma.streamingService.findMany({
         where: {
           availability: {
             some: {
@@ -27,57 +32,92 @@ export class StreamingServicesService {
             },
           },
         },
-      }),
-    };
+      });
+
+      if (!streamingServices || streamingServices.length < 1) {
+        throw new NotFoundException('No streaming services found');
+      }
+
+      return { streamingServices };
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid country');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('No streaming services found');
+      }
+      throw error;
+    }
   }
 
   async findFirst(id: number, country?: string) {
-    const streamingService = await this.prisma.streamingService.findFirst({
-      where: {
-        id: Number(id),
-        availability: {
-          some: {
-            country: country,
+    try {
+      const streamingService = await this.prisma.streamingService.findFirst({
+        where: {
+          AND: [
+            { id: Number(id) },
+            country
+              ? {
+                  availability: {
+                    some: { country },
+                  },
+                }
+              : {},
+          ],
+        },
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingServiceId: false,
+              movie: true,
+            },
           },
         },
-      },
-      include: {
-        availability: {
-          select: {
-            id: false,
-            country: false,
-            movieId: false,
-            streamingServiceId: false,
-            movie: true,
-          },
-        },
-      },
-    });
+      });
 
-    if (!streamingService) {
-      throw new NotFoundException('Streaming service not found');
+      if (!streamingService) {
+        throw new NotFoundException('Streaming service not found');
+      }
+
+      return streamingService;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid streaming service ID');
+      }
+      throw error;
     }
-
-    return streamingService;
   }
 
   async create(data: CreateStreamingServiceDto) {
-    return this.prisma.streamingService.create({
-      data: {
-        logoUrl: data.logoUrl,
-        name: data.name,
-      },
-      include: {
-        availability: {
-          select: {
-            id: false,
-            country: false,
-            movieId: false,
-            streamingServiceId: false,
-            movie: true,
+    try {
+      return await this.prisma.streamingService.create({
+        data: {
+          logoUrl: data.logoUrl,
+          name: data.name,
+        },
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: false,
+              movieId: false,
+              streamingServiceId: false,
+              movie: true,
+            },
           },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid streaming service data');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('Unable to create streaming service');
+      }
+      throw error;
+    }
   }
 }
