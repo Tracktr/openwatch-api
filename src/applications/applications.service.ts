@@ -27,4 +27,24 @@ export class ApplicationsService {
       apiKey,
     };
   }
+
+  getApplications(user: { userId: string; email: string }) {
+    return this.prisma.application.findMany({
+      where: {
+        userId: user.userId,
+      },
+      include: {
+        apiKey: true,
+      },
+    });
+  }
+
+  async getApplicationById(id: string, user: any) {
+    return this.prisma.application.findFirst({
+      where: { id: id, userId: user.id },
+      include: {
+        apiKey: true,
+      },
+    });
+  }
 }
