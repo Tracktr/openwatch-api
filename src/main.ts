@@ -29,7 +29,7 @@ async function bootstrap() {
     .build();
   patchNestjsSwagger();
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('', app, document);
 
   // passport doesn't work nicely with fastify, so we need to add some hooks to make it work
   // github.com/nestjs/nest/issues/5702
