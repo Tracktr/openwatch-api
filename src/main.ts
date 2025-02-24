@@ -3,9 +3,11 @@ import { AppModule } from './app.module';
 import { FastifyAdapter } from '@nestjs/platform-fastify';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { patchNestjsSwagger } from '@anatine/zod-nestjs';
+import cookie from '@fastify/cookie';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, new FastifyAdapter());
+  await app.getHttpAdapter().getInstance().register(cookie);
 
   const config = new DocumentBuilder()
     .setTitle('OpenWatch API')
