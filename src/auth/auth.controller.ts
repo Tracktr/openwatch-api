@@ -34,14 +34,7 @@ export class AuthController {
       refresh_token: string;
     };
 
-    res.setCookie('refresh_token', refresh_token, {
-      httpOnly: true,
-      secure: true,
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-    });
-
-    const redirectUrl = `${this.configService.get<string>('CLIENT_URL')}/login/callback?token=${access_token}`;
+    const redirectUrl = `${this.configService.get<string>('CLIENT_URL')}/login/callback?access_token=${access_token}&refresh_token=${refresh_token}`;
 
     res.status(302).redirect(redirectUrl);
     return;
