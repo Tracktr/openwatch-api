@@ -54,10 +54,6 @@ export class ApplicationsService {
         },
       });
 
-      if (!applications || applications.length < 1) {
-        throw new NotFoundException('No applications found');
-      }
-
       return { applications };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientValidationError) {
@@ -82,6 +78,21 @@ export class ApplicationsService {
       if (!application) {
         throw new NotFoundException('Application not found');
       }
+
+      return application;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid application ID');
+      }
+      throw error;
+    }
+  }
+
+  async deleteApplication(id: string, user: any) {
+    try {
+      const application = await this.prisma.application.delete({
+        where: { id: id, userId: user.id },
+      });
 
       return application;
     } catch (error) {
