@@ -33,8 +33,9 @@ export class AuthController {
       access_token: string;
       refresh_token: string;
     };
+    const clientUrl = this.configService.get<string>('CLIENT_URL');
 
-    const redirectUrl = `${this.configService.get<string>('CLIENT_URL')}/login/callback?access_token=${access_token}&refresh_token=${refresh_token}`;
+    const redirectUrl = `${clientUrl}/login/callback?access_token=${access_token}&refresh_token=${refresh_token}`;
 
     res.status(302).redirect(redirectUrl);
     return;
