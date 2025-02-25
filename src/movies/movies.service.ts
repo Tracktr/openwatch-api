@@ -36,10 +36,6 @@ export class MoviesService {
         },
       });
 
-      if (!movies || movies.length < 1) {
-        throw new NotFoundException('No movies found');
-      }
-
       return { movies };
     } catch (error) {
       if (error instanceof Prisma.PrismaClientValidationError) {

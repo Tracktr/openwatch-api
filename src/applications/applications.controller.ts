@@ -6,10 +6,20 @@ import {
   Request,
   Get,
   Param,
+  Delete,
 } from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
-import { ApiBearerAuth, ApiCreatedResponse } from '@nestjs/swagger';
-import { ApplicationDto, CreateApplicationDto } from './applications.dto';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiResponse,
+  ApiResponseProperty,
+} from '@nestjs/swagger';
+import {
+  ApplicationDto,
+  CreateApplicationDto,
+  GetApplicationsDto,
+} from './applications.dto';
 import { AuthGuard } from '@nestjs/passport';
 
 @Controller('applications')
@@ -33,8 +43,8 @@ export class ApplicationsController {
   }
 
   @Get('')
-  @ApiCreatedResponse({
-    type: ApplicationDto,
+  @ApiResponse({
+    type: GetApplicationsDto,
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('Bearer')
@@ -43,12 +53,19 @@ export class ApplicationsController {
   }
 
   @Get(':id')
-  @ApiCreatedResponse({
+  @ApiResponseProperty({
     type: ApplicationDto,
   })
   @UseGuards(AuthGuard('jwt'))
   @ApiBearerAuth('Bearer')
   async getApplicationById(@Param('id') id: string, @Request() req) {
     return this.applicationsService.getApplicationById(id, req.user);
+  }
+
+  @Delete(':id')
+  @UseGuards(AuthGuard('jwt'))
+  @ApiBearerAuth('Bearer')
+  async deleteApplication(@Param('id') id: string, @Request() req) {
+    return this.applicationsService.deleteApplication(id, req.user);
   }
 }
