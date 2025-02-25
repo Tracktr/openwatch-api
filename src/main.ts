@@ -35,7 +35,7 @@ async function bootstrap() {
 
   // passport doesn't work nicely with fastify, so we need to add some hooks to make it work
   // github.com/nestjs/nest/issues/5702
-  https: app
+  app
     .getHttpAdapter()
     .getInstance()
     .addHook('onRequest', (request, reply, done) => {
@@ -48,6 +48,11 @@ async function bootstrap() {
       request.res = reply;
       done();
     });
+
+  app.enableCors({
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
+    credentials: true,
+  });
 
   await app.listen(process.env.PORT || 3000, '0.0.0.0');
 }
