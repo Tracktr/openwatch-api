@@ -48,4 +48,8 @@ export class CreateMovieDto extends createZodDto(
 
 export class GetMoviesDto extends createZodDto(GetMoviesSchema) {}
 
+export class AddMovieAvailabilityDto extends createZodDto(
+  CreateMovieAvailabilitySchema,
+) {}
+
 export { MovieBaseSchema as MovieSchema };

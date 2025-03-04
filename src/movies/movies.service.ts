@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { CreateMovieDto } from './movies.dto';
+import { AddMovieAvailabilityDto, CreateMovieDto } from './movies.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -119,6 +119,45 @@ export class MoviesService {
       }
       if (error instanceof Prisma.PrismaClientKnownRequestError) {
         throw new NotFoundException('Unable to create movie');
+      }
+      throw error;
+    }
+  }
+
+  async addAvailability(id: number, data: AddMovieAvailabilityDto) {
+    try {
+      return await this.prisma.movie.update({
+        where: { id: Number(id) },
+        data: {
+          availability: {
+            create: {
+              country: data.country,
+              streamingService: {
+                connect: { id: data.streamingServiceId },
+              },
+            },
+          },
+        },
+        include: {
+          availability: {
+            select: {
+              id: false,
+              country: true,
+              movieId: false,
+              streamingService: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid availability data');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        if (error.code === 'P2002') {
+          throw new BadRequestException('Availability already exists');
+        }
+        throw new NotFoundException('Movie not found');
       }
       throw error;
     }
