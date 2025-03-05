@@ -103,7 +103,6 @@ export class ApplicationsController {
     @Param('key') key: string,
     @Request() req,
   ) {
-    console.log(key);
     return this.applicationsService.toggleApiKeyStatus(id, key, req.user);
   }
 
