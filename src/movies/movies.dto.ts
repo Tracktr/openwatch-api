@@ -6,6 +6,8 @@ import { z } from 'zod';
 const MovieAvailabilityBaseSchema = extendApi(
   z.object({
     streamingService: StreamingServiceSchema,
+    upvotes: z.number().optional(),
+    downvotes: z.number().optional(),
   }),
 );
 
@@ -21,6 +23,22 @@ const CreateMovieAvailabilitySchema = extendApi(
   z.object({
     streamingServiceId: z.number(),
     country: z.string(),
+  }),
+);
+
+const VoteAvailabilitySchema = extendApi(
+  z.object({
+    movieAvailabilityId: z.number(),
+    isUpvote: z.boolean(),
+  }),
+);
+
+const VoteResponseSchema = extendApi(
+  z.object({
+    movieAvailabilityId: z.number(),
+    upvotes: z.number(),
+    downvotes: z.number(),
+    success: z.boolean(),
   }),
 );
 
@@ -51,5 +69,9 @@ export class GetMoviesDto extends createZodDto(GetMoviesSchema) {}
 export class AddMovieAvailabilityDto extends createZodDto(
   CreateMovieAvailabilitySchema,
 ) {}
+
+export class VoteAvailabilityDto extends createZodDto(VoteAvailabilitySchema) {}
+
+export class VoteResponseDto extends createZodDto(VoteResponseSchema) {}
 
 export { MovieBaseSchema as MovieSchema };

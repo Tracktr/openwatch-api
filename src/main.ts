@@ -14,7 +14,7 @@ async function bootstrap() {
     .setDescription('The OpenWatch API description')
     .setVersion('1.0')
     .addApiKey(
-      { type: 'apiKey', name: 'x-access-token', in: 'header' },
+      { type: 'apiKey', name: 'API key', in: 'header' },
       'x-access-token',
     )
     .addBearerAuth(
@@ -34,7 +34,7 @@ async function bootstrap() {
   SwaggerModule.setup('schema', app, document);
 
   // passport doesn't work nicely with fastify, so we need to add some hooks to make it work
-  // github.com/nestjs/nest/issues/5702
+  // https://github.com/nestjs/nest/issues/5702
   app
     .getHttpAdapter()
     .getInstance()

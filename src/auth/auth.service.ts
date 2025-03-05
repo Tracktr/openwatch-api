@@ -10,12 +10,17 @@ export class AuthService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async generateAuthKey(applicationId: string): Promise<string> {
+  async generateAuthKey(
+    applicationId: string,
+    keyName: string = 'Default Key',
+  ): Promise<string> {
     const authKey = crypto.randomBytes(16).toString('hex');
     await this.prisma.apiKey.create({
       data: {
         key: authKey,
-        Application: { connect: { id: applicationId } },
+        name: keyName,
+        enabled: true,
+        application: { connect: { id: applicationId } },
       },
     });
     return authKey;
@@ -25,7 +30,7 @@ export class AuthService {
     const key = await this.prisma.apiKey.findUnique({
       where: { key: authKey },
     });
-    return !!key;
+    return !!key && key.enabled;
   }
 
   async validateUserByGoogle(googleId: string, email: string, name?: string) {

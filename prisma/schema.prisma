@@ -28,14 +28,32 @@ model StreamingService {
 }
 
 model MovieAvailability {
-  id                 Int              @id @default(autoincrement())
-  movie              Movie            @relation(fields: [movieId], references: [id])
+  id                 Int                    @id @default(autoincrement())
+  movie              Movie                  @relation(fields: [movieId], references: [id])
   movieId            Int
-  streamingService   StreamingService @relation(fields: [streamingServiceId], references: [id])
+  streamingService   StreamingService       @relation(fields: [streamingServiceId], references: [id])
   streamingServiceId Int
   country            String
+  upvotes            AvailabilityUpvote[]
+  downvotes          AvailabilityDownvote[]
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
 
   @@unique([movieId, streamingServiceId, country])
+}
+
+model AvailabilityUpvote {
+  id                  Int               @id @default(autoincrement())
+  movieAvailability   MovieAvailability @relation(fields: [movieAvailabilityId], references: [id], onDelete: Cascade)
+  movieAvailabilityId Int
+  createdAt           DateTime          @default(now())
+}
+
+model AvailabilityDownvote {
+  id                  Int               @id @default(autoincrement())
+  movieAvailability   MovieAvailability @relation(fields: [movieAvailabilityId], references: [id], onDelete: Cascade)
+  movieAvailabilityId Int
+  createdAt           DateTime          @default(now())
 }
 
 model User {
@@ -64,15 +82,16 @@ model Application {
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  apiKey    ApiKey?  @relation(fields: [apiKeyId], references: [id])
-  apiKeyId  Int?
+  updatedAt DateTime @default(now())
+  apiKeys   ApiKey[]
 }
 
 model ApiKey {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique
-  createdAt DateTime @default(now())
-
-  Application Application[]
+  id            Int         @id @default(autoincrement())
+  key           String      @unique
+  name          String      @default("Default Key")
+  enabled       Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
 }

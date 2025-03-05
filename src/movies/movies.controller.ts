@@ -15,10 +15,12 @@ import {
   ApiSecurity,
 } from '@nestjs/swagger';
 import {
+  AddMovieAvailabilityDto,
   CreateMovieDto,
   GetMoviesDto,
   MovieDto,
-  AddMovieAvailabilityDto,
+  VoteAvailabilityDto,
+  VoteResponseDto,
 } from './movies.dto';
 
 @Controller('movies')
@@ -65,5 +67,15 @@ export class MoviesController {
     @Body() data: AddMovieAvailabilityDto,
   ) {
     return this.moviesService.addAvailability(id, data);
+  }
+
+  @Post(':id/availability/vote')
+  @UseGuards(AuthGuard)
+  @ApiCreatedResponse({
+    type: VoteResponseDto,
+  })
+  @ApiSecurity('x-access-token')
+  async voteAvailability(@Body() data: VoteAvailabilityDto) {
+    return this.moviesService.voteAvailability(data);
   }
 }

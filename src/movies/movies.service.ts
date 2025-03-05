@@ -4,7 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
-import { AddMovieAvailabilityDto, CreateMovieDto } from './movies.dto';
+import {
+  AddMovieAvailabilityDto,
+  CreateMovieDto,
+  VoteAvailabilityDto,
+} from './movies.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
@@ -28,9 +32,17 @@ export class MoviesService {
               country: true,
               movieId: false,
               streamingService: true,
+              _count: {
+                select: {
+                  upvotes: true,
+                  downvotes: true,
+                },
+              },
             },
             where: {
-              country,
+              country: {
+                mode: 'insensitive',
+              },
             },
           },
         },
@@ -66,9 +78,17 @@ export class MoviesService {
               country: false,
               movieId: false,
               streamingService: true,
+              _count: {
+                select: {
+                  upvotes: true,
+                  downvotes: true,
+                },
+              },
             },
             where: {
-              country,
+              country: {
+                mode: 'insensitive',
+              },
             },
           },
         },
@@ -109,6 +129,12 @@ export class MoviesService {
               country: false,
               movieId: false,
               streamingService: true,
+              _count: {
+                select: {
+                  upvotes: true,
+                  downvotes: true,
+                },
+              },
             },
           },
         },
@@ -145,6 +171,12 @@ export class MoviesService {
               country: true,
               movieId: false,
               streamingService: true,
+              _count: {
+                select: {
+                  downvotes: true,
+                  upvotes: true,
+                },
+              },
             },
           },
         },
@@ -158,6 +190,32 @@ export class MoviesService {
           throw new BadRequestException('Availability already exists');
         }
         throw new NotFoundException('Movie not found');
+      }
+      throw error;
+    }
+  }
+
+  async voteAvailability(data: VoteAvailabilityDto) {
+    try {
+      if (data.isUpvote) {
+        return await this.prisma.availabilityUpvote.create({
+          data: {
+            movieAvailabilityId: data.movieAvailabilityId,
+          },
+        });
+      } else if (data.isUpvote === false) {
+        return await this.prisma.availabilityDownvote.create({
+          data: {
+            movieAvailabilityId: data.movieAvailabilityId,
+          },
+        });
+      }
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientValidationError) {
+        throw new BadRequestException('Invalid vote data');
+      }
+      if (error instanceof Prisma.PrismaClientKnownRequestError) {
+        throw new NotFoundException('Movie availability not found');
       }
       throw error;
     }

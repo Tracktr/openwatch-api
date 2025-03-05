@@ -17,7 +17,10 @@ export class StreamingServicesService {
         where: {
           availability: {
             some: {
-              country: country,
+              country: {
+                equals: country,
+                mode: 'insensitive',
+              },
             },
           },
         },
@@ -59,7 +62,12 @@ export class StreamingServicesService {
             country
               ? {
                   availability: {
-                    some: { country },
+                    some: {
+                      country: {
+                        equals: country,
+                        mode: 'insensitive',
+                      },
+                    },
                   },
                 }
               : {},

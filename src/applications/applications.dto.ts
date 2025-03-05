@@ -2,28 +2,72 @@ import { createZodDto } from '@anatine/zod-nestjs';
 import { extendApi } from '@anatine/zod-openapi';
 import { z } from 'zod';
 
-const CreateApplicationSchema = z.object({
-  name: z.string().min(1),
+// Create Application DTO
+const createApplicationSchema = z.object({
+  name: extendApi(z.string().min(1), {
+    description: 'Application name',
+    example: 'My Application',
+  }),
 });
 
 export class CreateApplicationDto extends createZodDto(
-  CreateApplicationSchema,
+  createApplicationSchema,
 ) {}
 
-const ApplicationSchema = z.object({
-  id: z.string(),
-  name: z.string(),
-  apiKey: z.object({
-    key: z.string(),
+// API Key DTOs
+const createApiKeySchema = z.object({
+  name: extendApi(z.string().optional().default('Default Key'), {
+    description: 'Name of the API key',
+    example: 'Production Key',
   }),
 });
 
-const GetApplicationsSchema = extendApi(
-  z.object({
-    applications: ApplicationSchema.array(),
+export class CreateApiKeyDto extends createZodDto(createApiKeySchema) {}
+
+// Response DTOs
+const apiKeyDtoSchema = z.object({
+  id: extendApi(z.number(), {
+    description: 'API key ID',
   }),
-);
+  name: extendApi(z.string(), {
+    description: 'API key name',
+  }),
+  enabled: extendApi(z.boolean(), {
+    description: 'Whether the API key is enabled',
+  }),
+  createdAt: extendApi(z.date(), {
+    description: 'When the API key was created',
+  }),
+  key: extendApi(z.string().optional(), {
+    description: 'The API key value (only provided when creating new keys)',
+  }),
+});
 
-export class GetApplicationsDto extends createZodDto(GetApplicationsSchema) {}
+export class ApiKeyDto extends createZodDto(apiKeyDtoSchema) {}
 
-export class ApplicationDto extends createZodDto(ApplicationSchema) {}
+const applicationDtoSchema = z.object({
+  id: extendApi(z.string(), {
+    description: 'Application ID',
+  }),
+  name: extendApi(z.string(), {
+    description: 'Application name',
+  }),
+  apiKey: extendApi(z.string().optional(), {
+    description: 'API key (only returned when creating a new application)',
+  }),
+  apiKeys: extendApi(z.array(apiKeyDtoSchema).optional(), {
+    description: 'List of API keys for this application',
+  }),
+});
+
+export class ApplicationDto extends createZodDto(applicationDtoSchema) {}
+
+const getApplicationsDtoSchema = z.object({
+  applications: extendApi(z.array(applicationDtoSchema), {
+    description: 'List of user applications',
+  }),
+});
+
+export class GetApplicationsDto extends createZodDto(
+  getApplicationsDtoSchema,
+) {}
